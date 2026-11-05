@@ -1,0 +1,2 @@
+# Arquitectura
+Todo ing sofw

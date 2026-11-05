@@ -1,0 +1,43 @@
+CI/CD con Jenkins y Terraform es una combinación muy común en DevOps: Jenkins se encarga de la orquestación del pipeline (CI/CD) y Terraform de la gestión de la infraestructura como código (IaC). En pocas palabras, Jenkins automatiza el "flujo" (compilar, probar, desplegar) y Terraform se encarga de "crear y gestionar los recursos" (servidores, redes, bases de datos) que necesita ese flujo.
+
+🎯 El rol de cada herramienta
+
+· Terraform: Define y aprovisiona infraestructura (máquinas virtuales, redes, almacenamiento) en la nube (Azure, AWS, GCP) de forma declarativa. Mantiene un "estado" para saber qué recursos existen y poder actualizarlos o destruirlos de forma controlada .
+· Jenkins: Es el servidor de automatización. Ejecuta tareas de forma secuencial o paralela (pipelines) cuando ocurre un evento (como un push de código). Se encarga de ejecutar los comandos de Terraform (terraform plan, terraform apply) en el momento adecuado y con las aprobaciones necesarias .
+
+🔄 ¿Cómo funcionan juntos en un flujo típico?
+
+Imagina que quieres desplegar una aplicación. El flujo automatizado sería así:
+
+1. Disparador: Un desarrollador sube un cambio al repositorio de Git (GitHub, GitLab).
+2. Jenkins inicia el pipeline: Jenkins detecta el cambio y arranca el proceso.
+3. Jenkins ejecuta Terraform: El pipeline ejecuta terraform plan para ver qué infraestructura se va a crear o modificar. Si todo está correcto y hay una aprobación manual (si es producción), ejecuta terraform apply para crear los recursos reales (por ejemplo, una VM en Azure o AWS) .
+4. Despliegue: Una vez creada la infraestructura, Jenkins continúa con el despliegue de la aplicación (instalar software, configurar servidores) .
+
+📋 Ejemplo práctico de un Pipeline
+
+Un Jenkinsfile (el archivo que define el pipeline) para Terraform suele tener estos pasos básicos :
+
+```groovy
+pipeline {
+    agent any
+    stages {
+        stage('Checkout') { /* Descarga el código de Git */ }
+        stage('Terraform Init') { /* Inicializa el directorio de trabajo de Terraform */ }
+        stage('Terraform Plan') { /* Muestra los cambios que se harán en la infra */ }
+        stage('Approval') {
+            // Pausa el pipeline para que un humano revise el plan antes de aplicar
+            input message: '¿Aprobar cambios de infraestructura?'
+        }
+        stage('Terraform Apply') { /* Crea o modifica los recursos reales */ }
+    }
+}
+```
+
+💡 ¿Por qué se usan juntos?
+
+· Automatización total: Eliminas la intervención manual y los errores humanos al crear entornos (dev, staging, prod) de forma idéntica .
+· Control y trazabilidad: Cada cambio en la infraestructura queda registrado en el historial de Jenkins y en el repositorio de Git, permitiendo saber quién, qué y cuándo se cambió .
+· Aprobaciones: Jenkins permite configurar pasos de aprobación manual (como el input del ejemplo) antes de tocar entornos críticos, algo esencial cuando Terraform va a modificar o destruir recursos .
+
+¿Estás pensando en montar este flujo en algún proveedor cloud concreto (AWS, Azure, GCP) o tienes dudas sobre algún paso específico?
